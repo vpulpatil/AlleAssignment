@@ -1,5 +1,6 @@
 package com.alle.assignment.presentation
 
+import android.app.Activity
 import android.content.ContentUris
 import android.content.Intent
 import android.os.Build
@@ -55,9 +56,17 @@ class MainActivity : ComponentActivity() {
     private fun storageAccessAction() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-            startActivity(intent)
+            startActivityForResult(intent, 70)
         } else {
             //TODO: Check for API lower than API 30
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == 70) {
+            setupUi()
+        } else {
+            super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
