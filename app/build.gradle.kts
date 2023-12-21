@@ -89,6 +89,9 @@ dependencies {
     //Glide: Image Loading Library
     implementation("com.github.bumptech.glide:glide:4.16.0")
 
+    //ML-Kit
+    implementation("com.google.mlkit:text-recognition:16.0.0")
+
     //Unit Testing
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

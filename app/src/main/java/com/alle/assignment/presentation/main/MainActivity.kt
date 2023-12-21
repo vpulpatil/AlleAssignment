@@ -1,6 +1,5 @@
-package com.alle.assignment.presentation
+package com.alle.assignment.presentation.main
 
-import android.app.Activity
 import android.content.ContentUris
 import android.content.Intent
 import android.os.Build
@@ -11,27 +10,62 @@ import android.provider.Settings
 import android.util.Log
 import android.view.View
 import androidx.activity.ComponentActivity
+import androidx.activity.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.alle.assignment.data.repository.Resource
 import com.alle.assignment.databinding.ActivityMainBinding
 import com.alle.assignment.domain.model.ScreenshotModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private const val TAG = "MainActivity"
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private var _binding: ActivityMainBinding? = null
     private val binding: ActivityMainBinding
         get() = _binding!!
 
+    private val mainViewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setupObservers()
+    }
+
+    override fun onResume() {
+        super.onResume()
         setupUi()
+    }
+
+    private fun setupObservers() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                launch {
+                    mainViewModel.getOCRText.collect {
+                        when(it) {
+                            is Resource.Loading -> {
+                                Log.d(TAG, "Resource is loading")
+                            }
+                            is Resource.Success -> {
+                                Log.d(TAG, "Resource Success, data: ${it.data}")
+                            }
+                            is Resource.Failed -> {
+                                Log.d(TAG, "Resource Failed, errorMessage: ${it.message}")
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
     }
 
     private fun setupUi() {
@@ -59,14 +93,6 @@ class MainActivity : ComponentActivity() {
             startActivityForResult(intent, 70)
         } else {
             //TODO: Check for API lower than API 30
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == 70) {
-            setupUi()
-        } else {
-            super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
@@ -147,6 +173,7 @@ class MainActivity : ComponentActivity() {
             binding.apply {
                 rvImageList.adapter = ImageListAdapter(imagesList) {
                     imgSelectedFile.setImageURI(it.fileUri)
+                    mainViewModel.generateOCRText(it.fileUri)
                 }
             }
         }

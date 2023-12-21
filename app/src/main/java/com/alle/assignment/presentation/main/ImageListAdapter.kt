@@ -1,4 +1,4 @@
-package com.alle.assignment.presentation
+package com.alle.assignment.presentation.main
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
