@@ -7,5 +7,4 @@ interface TextRecognizerRepository {
 
     suspend fun getOCRText(imageUri: Uri): Flow<Resource<String>>
     suspend fun getImageLabel(imageUri: Uri): Flow<Resource<List<String>>>
-
 }
