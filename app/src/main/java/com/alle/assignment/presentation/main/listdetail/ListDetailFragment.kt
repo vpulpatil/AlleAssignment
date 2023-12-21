@@ -5,15 +5,26 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.alle.assignment.data.repository.Resource
 import com.alle.assignment.databinding.FragmentListScreenBinding
 import com.alle.assignment.presentation.main.MainActivity
+import com.alle.assignment.presentation.main.MainViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
+private const val TAG = "ListDetailFragment"
+@AndroidEntryPoint
 class ListDetailFragment: BottomSheetDialogFragment(), OnBottomSheetCallbacks {
     private var _binding: FragmentListScreenBinding? = null
-    // This property is only valid between `onCreateView` and `onDestroyView`
     private val binding get() = _binding!!
+
+    private val mainViewModel: MainViewModel by activityViewModels()
 
     private var currentState: Int = BottomSheetBehavior.STATE_EXPANDED
 
@@ -29,8 +40,65 @@ class ListDetailFragment: BottomSheetDialogFragment(), OnBottomSheetCallbacks {
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setupUI()
+        setupObservers()
+    }
+
+    private fun setupUI() {
+
+    }
+
+    private fun setupObservers() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                launch {
+                    mainViewModel.getOCRText.collect {
+                        when(it) {
+                            is Resource.Loading -> {
+                                Log.d(TAG, "getOCRText Resource is loading")
+                            }
+                            is Resource.Success -> {
+                                Log.d(TAG, "getOCRText Resource Success, data: ${it.data}")
+                                binding.tvDescriptionValue.text = it.data
+                            }
+                            is Resource.Failed -> {
+                                Log.d(TAG, "getOCRText Resource Failed, errorMessage: ${it.message}")
+                            }
+                        }
+                    }
+                }
+                launch {
+                    mainViewModel.getImageLabel.collect {
+                        when(it) {
+                            is Resource.Loading -> {
+                                Log.d(TAG, "getImageLabel Resource is loading")
+                            }
+                            is Resource.Success -> {
+                                Log.d(TAG, "getImageLabel Resource Success, data: ${it.data}")
+                                setCollectionListUI(it.data)
+                            }
+                            is Resource.Failed -> {
+                                Log.d(TAG, "getImageLabel Resource Failed, errorMessage: ${it.message}")
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    private fun setCollectionListUI(collections: List<String>) {
+        binding.apply {
+            rvCollectionsList.adapter = ImageCollectionAdapter(collections)
+        }
+    }
+
     // NOTE: fragments outlive their views!
-    //       One must clean up any references to the binging class instance here
+    // One must clean up any references to the binging class instance here
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -43,13 +111,9 @@ class ListDetailFragment: BottomSheetDialogFragment(), OnBottomSheetCallbacks {
         when (newState) {
             BottomSheetBehavior.STATE_EXPANDED -> {
                 //state is expanded
-                binding.textResult.visibility = View.GONE
-                binding.textResult2.visibility = View.VISIBLE
             }
             BottomSheetBehavior.STATE_COLLAPSED -> {
                 //state is collapsed
-                binding.textResult2.visibility = View.GONE
-                binding.textResult.visibility = View.VISIBLE
             }
         }
     }

@@ -1,44 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/fragment_root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/corner"
-    app:layout_behavior="android.support.design.widget.BottomSheetBehavior"
+    android:elevation="20dp"
+    android:paddingHorizontal="16dp"
     tools:context=".presentation.main.listdetail.ListDetailFragment">
 
-    <FrameLayout
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/etAddNote"
         android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:animateLayoutChanges="true"
-        android:background="@drawable/corner"
-        android:orientation="horizontal"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:hint="Add a Note"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/textResult"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center|start"
-            android:layout_marginStart="15dp"
-            android:text="No Results"
-            android:textColor="#2B2B2B"
-            android:textSize="20sp" />
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvCollectionsLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="sans-serif-medium"
+        android:text="Collections"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etAddNote" />
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/textResult2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center|start"
-            android:layout_marginStart="15dp"
-            android:text="All Results Available"
-            android:textColor="#2B2B2B"
-            android:textSize="20sp"
-            android:visibility="gone" />
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvCollectionsEdit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Edit"
+        android:textColor="@color/black"
+        app:layout_constraintBottom_toBottomOf="@+id/tvCollectionsLabel"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tvCollectionsLabel" />
 
-    </FrameLayout>
-</LinearLayout>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvCollectionsList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:orientation="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@+id/tvCollectionsLabel"
+        tools:listitem="@layout/item_image_collection" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvDescriptionLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="sans-serif-medium"
+        android:text="Description"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/rvCollectionsList" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvDescriptionValue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvDescriptionLabel"
+        tools:text="Lorem Ipsum" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

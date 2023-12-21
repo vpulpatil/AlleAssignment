@@ -132,7 +132,7 @@ class MainActivity : FragmentActivity() {
     private fun storageAccessAction() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-            startActivityForResult(intent, 70)
+            startActivity(intent)
         } else {
             //TODO: Check for API lower than API 30
         }
@@ -144,49 +144,29 @@ class MainActivity : FragmentActivity() {
                 MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
             } else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
-            val selection2 = MediaStore.Images.Media.BUCKET_DISPLAY_NAME + " = ? "
-            val selection = MediaStore.Images.ImageColumns.RELATIVE_PATH + " like ? "
-            val projection2 = arrayOf("Screenshots")
-            val projection = arrayOf(
-                MediaStore.Images.Media._ID,
-                MediaStore.Images.Media.DISPLAY_NAME,
-                MediaStore.Images.Media.RELATIVE_PATH,
-                MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
-                MediaStore.Images.Media.BUCKET_ID,
-                MediaStore.MediaColumns.WIDTH
-            )
+            val selection = MediaStore.Images.Media.BUCKET_DISPLAY_NAME + " = ? "
 
-            val selectionArgs = arrayOf("%TestApp%")
-            val selectionArgs2 = arrayOf("Screenshots")
+            val selectionArgs = arrayOf("Screenshots")
 
-            val sortOrder = MediaStore.MediaColumns.DATE_ADDED + " COLLATE NOCASE DESC"
-            val sortOrder2 = MediaStore.Images.ImageColumns.DATE_TAKEN + " DESC"
+            val sortOrder = MediaStore.Images.ImageColumns.DATE_TAKEN + " DESC"
 
             val itemList: MutableList<ScreenshotModel> = mutableListOf()
 
             contentResolver?.query(
                 collection,
                 null,
-                selection2,
-                selectionArgs2,
-                sortOrder2
+                selection,
+                selectionArgs,
+                sortOrder
             )?.use { cursor ->
 
                 val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
                 val displayNameColumn =
                     cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)
-                val relativePathColumn =
-                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.RELATIVE_PATH)
-                val widthPathColumn =
-                    cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.WIDTH)
-
 
                 while (cursor.moveToNext()) {
                     val id = cursor.getLong(idColumn)
                     val displayName = cursor.getString(displayNameColumn)
-                    val relativePath = cursor.getString(relativePathColumn)
-                    val width = cursor.getInt(widthPathColumn)
-
 
                     val contentUri = ContentUris.withAppendedId(
                         MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
@@ -256,12 +236,14 @@ class MainActivity : FragmentActivity() {
         this.listener = onBottomSheetCallbacks
     }
 
-    fun hideBottomSheet() {
+    private fun hideBottomSheet() {
         binding.filterFragment.visibility = View.GONE
+        binding.rvImageList.visibility = View.VISIBLE
         mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
     }
 
-    fun showBottomSheet() {
+    private fun showBottomSheet() {
+        binding.rvImageList.visibility = View.GONE
         binding.filterFragment.visibility = View.VISIBLE
         mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
     }
