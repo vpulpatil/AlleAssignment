@@ -92,6 +92,9 @@ dependencies {
     //ML-Kit
     implementation("com.google.mlkit:text-recognition:16.0.0")
 
+    //Image Labelling
+    implementation("com.google.mlkit:image-labeling:17.0.7")
+
     //Unit Testing
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

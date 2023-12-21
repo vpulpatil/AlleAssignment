@@ -52,13 +52,28 @@ class MainActivity : ComponentActivity() {
                     mainViewModel.getOCRText.collect {
                         when(it) {
                             is Resource.Loading -> {
-                                Log.d(TAG, "Resource is loading")
+                                Log.d(TAG, "getOCRText Resource is loading")
                             }
                             is Resource.Success -> {
-                                Log.d(TAG, "Resource Success, data: ${it.data}")
+                                Log.d(TAG, "getOCRText Resource Success, data: ${it.data}")
                             }
                             is Resource.Failed -> {
-                                Log.d(TAG, "Resource Failed, errorMessage: ${it.message}")
+                                Log.d(TAG, "getOCRText Resource Failed, errorMessage: ${it.message}")
+                            }
+                        }
+                    }
+                }
+                launch {
+                    mainViewModel.getImageLabel.collect {
+                        when(it) {
+                            is Resource.Loading -> {
+                                Log.d(TAG, "getImageLabel Resource is loading")
+                            }
+                            is Resource.Success -> {
+                                Log.d(TAG, "getImageLabel Resource Success, data: ${it.data}")
+                            }
+                            is Resource.Failed -> {
+                                Log.d(TAG, "getImageLabel Resource Failed, errorMessage: ${it.message}")
                             }
                         }
                     }
@@ -173,7 +188,7 @@ class MainActivity : ComponentActivity() {
             binding.apply {
                 rvImageList.adapter = ImageListAdapter(imagesList) {
                     imgSelectedFile.setImageURI(it.fileUri)
-                    mainViewModel.generateOCRText(it.fileUri)
+                    mainViewModel.extractInfoFromImage(it.fileUri)
                 }
             }
         }

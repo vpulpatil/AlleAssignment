@@ -4,7 +4,12 @@ import android.content.Context
 import android.net.Uri
 import com.alle.assignment.data.repository.Resource
 import com.alle.assignment.data.repository.TextRecognizerRepository
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
+import com.google.android.gms.tasks.Task
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.label.ImageLabel
+import com.google.mlkit.vision.label.ImageLabeler
 import com.google.mlkit.vision.text.TextRecognizer
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -24,6 +29,7 @@ import javax.inject.Inject
 
 class TextRecognizerRepositoryImpl @Inject constructor(
     private val textRecognizer: TextRecognizer,
+    private val imageLabeler: ImageLabeler,
     @ApplicationContext private val appContext: Context
 ) : TextRecognizerRepository {
     override suspend fun getOCRText(imageUri: Uri): Flow<Resource<String>> {
@@ -44,8 +50,31 @@ class TextRecognizerRepositoryImpl @Inject constructor(
                 e.printStackTrace()
                 trySend(Resource.Failed(e.message ?: e.toString()))
             }
-            close()
-            awaitCancellation()
+            awaitClose()
+        }
+    }
+
+    override suspend fun getImageLabel(imageUri: Uri): Flow<Resource<List<String>>> {
+        return callbackFlow {
+            val successListener = OnSuccessListener<List<ImageLabel>> { imageLabels ->
+                trySend(Resource.Success(imageLabels.map { it.text }))
+            }
+
+            val failureListener = OnFailureListener { e ->
+                trySend(Resource.Failed(e.message ?: e.toString()))
+            }
+
+            try {
+                val image = InputImage.fromFilePath(appContext, imageUri)
+                trySend(Resource.Loading())
+                imageLabeler.process(image)
+                    .addOnSuccessListener(successListener)
+                    .addOnFailureListener(failureListener)
+            } catch (e: IOException) {
+                e.printStackTrace()
+                trySend(Resource.Failed(e.message ?: e.toString()))
+            }
+            awaitClose()
         }
     }
 }

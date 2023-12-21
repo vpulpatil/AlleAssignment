@@ -7,10 +7,10 @@ import com.alle.assignment.data.repository.Resource
 import com.alle.assignment.data.repository.TextRecognizerRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.zip
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,16 +23,31 @@ class MainViewModel @Inject constructor(
     val getOCRText: StateFlow<Resource<String>>
         get() = _getOCRText
 
+    private val _getImageLabel: MutableStateFlow<Resource<List<String>>> = MutableStateFlow(Resource.Loading())
+    val getImageLabel: StateFlow<Resource<List<String>>>
+        get() = _getImageLabel
 
-    fun generateOCRText(imageUri: Uri) {
+
+    fun extractInfoFromImage(imageUri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
-            textRecognizerRepository.getOCRText(imageUri)
-                .catch {
-                    _getOCRText.value = Resource.Failed(it.message ?: it.toString())
-                }
-                .collect {
-                    _getOCRText.value = it
-                }
+            launch {
+                textRecognizerRepository.getOCRText(imageUri)
+                    .catch {
+                        _getOCRText.value = Resource.Failed(it.message ?: it.toString())
+                    }
+                    .collect {
+                        _getOCRText.value = it
+                    }
+            }
+            launch {
+                textRecognizerRepository.getImageLabel(imageUri)
+                    .catch {
+                        _getImageLabel.value = Resource.Failed(it.message ?: it.toString())
+                    }
+                    .collect {
+                        _getImageLabel.value = it
+                    }
+            }
         }
     }
 
