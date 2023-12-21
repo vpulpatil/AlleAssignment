@@ -78,6 +78,7 @@ dependencies {
 
     //Material-3
     implementation("com.google.android.material:material:1.11.0")
+    implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
 
     //Dagger - Hilt
     val daggerVer = "2.48.1"
@@ -98,13 +99,14 @@ dependencies {
 
     //Room-DB
     val room_version = "2.6.1"
-
     implementation("androidx.room:room-runtime:$room_version")
     annotationProcessor("androidx.room:room-compiler:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
-
-    // To use Kotlin annotation processing tool (ksp)
     ksp("androidx.room:room-compiler:$room_version")
+
+    val nav_version = "2.7.6"
+    implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
+    implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
 
     //Unit Testing
     testImplementation("junit:junit:4.13.2")
