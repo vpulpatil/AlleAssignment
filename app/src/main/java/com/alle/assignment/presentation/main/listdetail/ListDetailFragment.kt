@@ -13,6 +13,7 @@ import com.alle.assignment.data.repository.Resource
 import com.alle.assignment.databinding.FragmentListScreenBinding
 import com.alle.assignment.presentation.main.MainActivity
 import com.alle.assignment.presentation.main.MainViewModel
+import com.alle.assignment.presentation.main.editcollection.EditCollectionBottomSheet
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -48,7 +49,12 @@ class ListDetailFragment: BottomSheetDialogFragment(), OnBottomSheetCallbacks {
     }
 
     private fun setupUI() {
-
+        binding.apply {
+            tvCollectionsEdit.setOnClickListener {
+                val bottomsheet = EditCollectionBottomSheet.newInstance(mainViewModel.selectedImageCollections)
+                bottomsheet.show(parentFragmentManager, bottomsheet.tag)
+            }
+        }
     }
 
     private fun setupObservers() {

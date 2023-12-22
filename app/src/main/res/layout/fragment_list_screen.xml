@@ -10,27 +10,35 @@
     android:paddingHorizontal="16dp"
     tools:context=".presentation.main.listdetail.ListDetailFragment">
 
-    <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/etAddNote"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/etAddNoteLayout"
+        style="@style/TextInputLayoutStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:hint="Add a Note"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etAddNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Add a Note" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvCollectionsLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:fontFamily="sans-serif-medium"
         android:text="Collections"
         android:textColor="@color/black"
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/etAddNote" />
+        app:layout_constraintTop_toBottomOf="@+id/etAddNoteLayout" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvCollectionsEdit"

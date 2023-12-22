@@ -27,6 +27,8 @@ class MainViewModel @Inject constructor(
     val getImageLabel: StateFlow<Resource<List<String>>>
         get() = _getImageLabel
 
+    val selectedImageCollections = arrayListOf<String>()
+
 
     fun extractInfoFromImage(imageUri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -46,6 +48,10 @@ class MainViewModel @Inject constructor(
                     }
                     .collect {
                         _getImageLabel.value = it
+                        if (it is Resource.Success) {
+                            selectedImageCollections.clear()
+                            selectedImageCollections.addAll(it.data)
+                        }
                     }
             }
         }
