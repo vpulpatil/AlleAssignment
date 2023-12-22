@@ -10,9 +10,11 @@ data class ImageEntity(
     @ColumnInfo(defaultValue = "")
     val description: String,
     @ColumnInfo(defaultValue = "")
-    val note: String,
+    var note: String,
     @ColumnInfo(defaultValue = "")
-    val collections: List<String>,
+    var collections: List<String>,
+    @ColumnInfo(defaultValue = "")
+    var inactiveCollections: List<String>,
 )
 
 data class ImageDescription(

@@ -9,5 +9,11 @@ class ImageConverter {
     fun List<String>.toStringData() = this.joinToString(STRING_SEPARATOR)
 
     @TypeConverter
-    fun String.toList() = this.split(STRING_SEPARATOR)
+    fun String.toList(): List<String> {
+        return if (this.isEmpty()) {
+            emptyList()
+        } else {
+            this.split(STRING_SEPARATOR)
+        }
+    }
 }

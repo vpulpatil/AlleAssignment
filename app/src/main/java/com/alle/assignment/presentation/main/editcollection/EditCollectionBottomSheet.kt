@@ -2,76 +2,127 @@ package com.alle.assignment.presentation.main.editcollection
 
 import android.content.Context
 import android.os.Bundle
-import android.text.SpannableString
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.style.ImageSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.alle.assignment.R
 import com.alle.assignment.databinding.BottomsheetEditCollectionBinding
+import com.alle.assignment.domain.model.ImageEntity
+import com.alle.assignment.presentation.main.MainViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipDrawable
+import kotlinx.coroutines.launch
 
 /**
  * Created by vipul on 22/12/23
  */
+private const val TAG = "EditCollectionSheet"
 class EditCollectionBottomSheet : BottomSheetDialogFragment() {
 
     private lateinit var mContext: Context
 
-    private var selectedCollectionList: ArrayList<String> = arrayListOf()
+    private var selectedImageEntity: ImageEntity? = null
 
     private var _binding: BottomsheetEditCollectionBinding? = null
     private val binding get() = _binding!!
 
+    private val mainViewModel: MainViewModel by activityViewModels()
+
     companion object {
-        const val EXTRA_SELECTED_COLLECTION_LIST = "EXTRA_SELECTED_COLLECTION_LIST"
-        fun newInstance(selectedCollectionList: ArrayList<String>) : EditCollectionBottomSheet {
-            val fragment = EditCollectionBottomSheet()
-            fragment.arguments = bundleOf(
-                EXTRA_SELECTED_COLLECTION_LIST to selectedCollectionList
-            )
-            return fragment
+        fun newInstance() : EditCollectionBottomSheet {
+            return EditCollectionBottomSheet()
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setStyle(DialogFragment.STYLE_NORMAL, R.style.BottomSheetDialogTheme)
-        setupData()
     }
 
     private fun setupData() {
-        selectedCollectionList.clear()
-        arguments?.getStringArrayList(EXTRA_SELECTED_COLLECTION_LIST)?.let {
-            selectedCollectionList.addAll(it)
+        selectedImageEntity = mainViewModel.selectedImageEntity.value
+    }
+
+    private fun setupUI(selectedImageEntity: ImageEntity?) {
+        Log.d(TAG, "setupUI called")
+        binding.apply {
+            selectedImageEntity?.collections?.forEach { collection ->
+                val chip = createActiveTagChip(mContext, collection)
+                chip.setOnCloseIconClickListener {
+                    mainViewModel.onRemoveCollectionAction(collection)
+                    chipGrpCollections.removeView(chip)
+                    addChipToInactiveCollectionList(collection)
+                }
+                chipGrpCollections.addView(chip)
+            }
+            setupInactiveCollectionUI(selectedImageEntity)
         }
     }
 
-    private fun setupUI() {
+    private fun setupInactiveCollectionUI(selectedImageEntity: ImageEntity?) {
+        Log.d(TAG, "setupInactiveCollectionUI called")
         binding.apply {
-            selectedCollectionList.forEach { collection ->
-                val chip = createTagChip(requireContext(), collection)
-                chip.setOnCloseIconClickListener {
-                    chipGrpCollections.removeView(chip)
+            val inactiveCollections = selectedImageEntity?.inactiveCollections ?: emptyList()
+            if (inactiveCollections.isNotEmpty()) {
+                tvSelectCollectionLabel.visibility = View.VISIBLE
+                rvCollectionList.visibility = View.VISIBLE
+                inactiveCollections.forEach {
+                    val chip = createInactiveTagChip(mContext, it)
+                    chip.setOnCloseIconClickListener {
+                        rvCollectionList.removeView(chip)
+                    }
+                    rvCollectionList.addView(chip)
                 }
-                chipGrpCollections.addView(chip)
+            } else {
+                tvSelectCollectionLabel.visibility = View.GONE
+                rvCollectionList.visibility = View.GONE
             }
         }
     }
 
-    private fun createTagChip(context: Context, chipName: String): Chip {
+    private fun addChipToInactiveCollectionList(collectionName: String) {
+        val chip = createInactiveTagChip(mContext, collectionName)
+        chip.setOnCloseIconClickListener {
+            mainViewModel.addToActiveCollection(collectionName)
+            binding.rvCollectionList.removeView(chip)
+            addChipToActiveCollectionList(collectionName)
+        }
+        binding.rvCollectionList.addView(chip)
+        binding.tvSelectCollectionLabel.visibility = View.VISIBLE
+        binding.rvCollectionList.visibility = View.VISIBLE
+    }
+
+    private fun addChipToActiveCollectionList(collectionName: String) {
+        val chip = createActiveTagChip(mContext, collectionName)
+        chip.setOnCloseIconClickListener {
+            binding.chipGrpCollections.removeView(chip)
+        }
+        binding.chipGrpCollections.addView(chip)
+    }
+
+    private fun createActiveTagChip(context: Context, chipName: String): Chip {
         return Chip(context).apply {
             text = chipName
             setChipBackgroundColorResource(R.color.yellow_500)
             isCloseIconVisible = true
+            setTextColor(ContextCompat.getColor(context, R.color.black))
+        }
+    }
+
+    private fun createInactiveTagChip(context: Context, chipName: String): Chip {
+        return Chip(context).apply {
+            text = chipName
+            setChipBackgroundColorResource(R.color.yellow_500)
+            isCloseIconVisible = true
+            closeIcon = ContextCompat.getDrawable(context, android.R.drawable.ic_menu_add)
             setTextColor(ContextCompat.getColor(context, R.color.black))
         }
     }
@@ -98,8 +149,22 @@ class EditCollectionBottomSheet : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupData()
         setupClick()
-        setupUI()
+        setupUI(selectedImageEntity)
+        setupObserver()
+    }
+
+    private fun setupObserver() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                launch {
+                    mainViewModel.selectedImageEntity.collect {
+                        selectedImageEntity = it
+                    }
+                }
+            }
+        }
     }
 
     override fun show(manager: FragmentManager, tag: String?) {

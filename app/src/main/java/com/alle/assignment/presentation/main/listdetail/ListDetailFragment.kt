@@ -51,7 +51,7 @@ class ListDetailFragment: BottomSheetDialogFragment(), OnBottomSheetCallbacks {
     private fun setupUI() {
         binding.apply {
             tvCollectionsEdit.setOnClickListener {
-                val bottomsheet = EditCollectionBottomSheet.newInstance(mainViewModel.selectedImageCollections)
+                val bottomsheet = EditCollectionBottomSheet.newInstance()
                 bottomsheet.show(parentFragmentManager, bottomsheet.tag)
             }
         }

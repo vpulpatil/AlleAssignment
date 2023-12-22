@@ -2,9 +2,8 @@ package com.alle.assignment.data.local
 
 import androidx.room.Dao
 import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import androidx.room.Upsert
 import com.alle.assignment.domain.model.ImageCollections
 import com.alle.assignment.domain.model.ImageDescription
@@ -18,7 +17,10 @@ interface ImageDao {
     fun getNotes(): Flow<List<ImageEntity>>
 
     @Query("SELECT * FROM image WHERE imageName = :imageName")
-    suspend fun getNoteByImageName(imageName: String): ImageEntity?
+    suspend fun getImageModelByImageName(imageName: String): ImageEntity?
+
+    @Update
+    suspend fun updateImageEntity(imageEntity: ImageEntity)
 
     @Upsert(entity = ImageEntity::class)
     suspend fun upsertImageDescription(imageDescription: ImageDescription)

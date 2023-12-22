@@ -5,12 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alle.assignment.data.repository.Resource
 import com.alle.assignment.data.repository.TextRecognizerRepository
+import com.alle.assignment.domain.model.ImageEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.zip
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,41 +18,75 @@ class MainViewModel @Inject constructor(
     private val textRecognizerRepository: TextRecognizerRepository
 ): ViewModel() {
 
-    private val _getOCRText: MutableStateFlow<Resource<String>> = MutableStateFlow(Resource.Loading())
-    val getOCRText: StateFlow<Resource<String>>
-        get() = _getOCRText
+    var getOCRText: MutableStateFlow<Resource<String>> = MutableStateFlow(Resource.Loading())
+        private set
 
-    private val _getImageLabel: MutableStateFlow<Resource<List<String>>> = MutableStateFlow(Resource.Loading())
-    val getImageLabel: StateFlow<Resource<List<String>>>
-        get() = _getImageLabel
+    var getImageLabel: MutableStateFlow<Resource<List<String>>> = MutableStateFlow(Resource.Loading())
+        private set
 
-    val selectedImageCollections = arrayListOf<String>()
-
+    var selectedImageEntity: MutableStateFlow<ImageEntity?> = MutableStateFlow(null)
+        private set
 
     fun extractInfoFromImage(imageUri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
             launch {
                 textRecognizerRepository.getOCRText(imageUri)
                     .catch {
-                        _getOCRText.value = Resource.Failed(it.message ?: it.toString())
+                        getOCRText.value = Resource.Failed(it.message ?: it.toString())
                     }
                     .collect {
-                        _getOCRText.value = it
+                        getOCRText.value = it
+                        if (it is Resource.Success) {
+                            fetchLatestImageEntity(imageUri.toString())
+                        }
                     }
             }
             launch {
                 textRecognizerRepository.getImageLabel(imageUri)
                     .catch {
-                        _getImageLabel.value = Resource.Failed(it.message ?: it.toString())
+                        getImageLabel.value = Resource.Failed(it.message ?: it.toString())
                     }
                     .collect {
-                        _getImageLabel.value = it
+                        getImageLabel.value = it
                         if (it is Resource.Success) {
-                            selectedImageCollections.clear()
-                            selectedImageCollections.addAll(it.data)
+                            fetchLatestImageEntity(imageUri.toString())
                         }
                     }
             }
+        }
+    }
+
+    fun onRemoveCollectionAction(removedCollection: String) {
+        viewModelScope.launch {
+            textRecognizerRepository.setInactiveCollection(
+                selectedImageEntity.value!!.imageName, removedCollection
+            ).catch {
+
+            }.collect {
+                if (it is Resource.Success) {
+                    selectedImageEntity.emit(it.data)
+                }
+            }
+        }
+    }
+
+    fun addToActiveCollection(newActiveCollection: String) {
+        viewModelScope.launch {
+            textRecognizerRepository.setInactiveCollection(
+                selectedImageEntity.value!!.imageName, newActiveCollection
+            ).catch {
+
+            }.collect {
+                if (it is Resource.Success) {
+                    selectedImageEntity.emit(it.data)
+                }
+            }
+        }
+    }
+
+    private fun fetchLatestImageEntity(imageUri: String) {
+        viewModelScope.launch {
+            selectedImageEntity.emit(textRecognizerRepository.getLocalImageEntity(imageUri))
         }
     }
 
