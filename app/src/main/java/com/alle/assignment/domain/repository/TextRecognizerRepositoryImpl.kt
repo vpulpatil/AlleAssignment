@@ -31,6 +31,10 @@ class TextRecognizerRepositoryImpl @Inject constructor(
 ) : TextRecognizerRepository {
     override suspend fun getOCRText(imageUri: Uri): Flow<Resource<String>> {
         return callbackFlow {
+            imageDao.getImageModelByImageName(imageUri.toString())?.let {
+                trySend(Resource.Success(it.description))
+                return@callbackFlow
+            }
             try {
                 val image = InputImage.fromFilePath(appContext, imageUri)
                 trySend(Resource.Loading())
@@ -61,6 +65,10 @@ class TextRecognizerRepositoryImpl @Inject constructor(
 
     override suspend fun getImageLabel(imageUri: Uri): Flow<Resource<List<String>>> {
         return callbackFlow {
+            imageDao.getImageModelByImageName(imageUri.toString())?.let {
+                trySend(Resource.Success(it.collections))
+                return@callbackFlow
+            }
             try {
                 val image = InputImage.fromFilePath(appContext, imageUri)
                 trySend(Resource.Loading())

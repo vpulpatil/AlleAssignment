@@ -65,6 +65,7 @@ class MainViewModel @Inject constructor(
             }.collect {
                 if (it is Resource.Success) {
                     selectedImageEntity.emit(it.data)
+                    getImageLabel.emit(Resource.Success(it.data.collections))
                 }
             }
         }
@@ -79,6 +80,7 @@ class MainViewModel @Inject constructor(
             }.collect {
                 if (it is Resource.Success) {
                     selectedImageEntity.emit(it.data)
+                    getImageLabel.emit(Resource.Success(it.data.collections))
                 }
             }
         }
